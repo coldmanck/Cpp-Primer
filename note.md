@@ -31,6 +31,15 @@ int main(){
 - list initializing the return value>: `vector<string> str_list(){ return {"abc", "def", "ghi"}; }`
 - Return from `main`: the value returned from main is treated as a **status indicator**. `0` means success while most of others mean failure.
 - Returning a pointer to an array: (1) Use type alias `typedef int arrT[10];` or `using arrT = int[10];`, then `arrT *func(int i);` returns a pointer to an array. (2) Without type alias: `int (*func(int i))[10]`. (3) Under C++11, `auto func(int i) -> int(*)[10]`. Return type follows the `->` sign and use auto to temporarily replace.
+- When using default arguments, be sure to **declare with initializer** and **not repeat in parameter list of definition**.
+```
+void printSth(int a, char b = 'b', string c = "str");
+int main(){ ... }
+void printSth(int a, char b, string c){
+	cout << a << ", " << b << ", " << c << ", " << endl;
+}
+```
+- `constexpr` functions: the return type and the type of each parameter **in a must be a literal type**.
 
 ### Function overloading
 - `Record lookup(Account &);` and `Record lookup(const Account &);` and `Record lookup(Account*)` and `Record lookup(const Account*);` can exist at the same time. (**low-level const**)
@@ -68,6 +77,59 @@ string &shorterString(string &s1, string s2){
 - When printing, one can use either **range for** or **iterator**. 
 - When using range for, use `for(const auto &i : ls)` rather than `for(auto i : ls)` because you are not going to (also cannot) modify something in the initializer_list. By this, one can avoid waste cpu to copy the value.
 
+## Declaration and Definition
+- Header files should contain declarations, source files should contain definitions.
+- However, `inline` and `constexpr` functions are usually defined in header files because may being defined multiple times in the program. 
+
+### Aids for Debugging
+**Preprocessor** is a program that runs before the compiler. Preprocessor variables are managed by the preprocessor but not compiler. As as result, we refer to them directly without the `std::` prefix. e.g. `NULL`. Also, when using `#ifndef FUNC_H`, `#define FUNC_H` and `#endif FUNC_H`, `FUNC_H` is a preprocessor variable. A preprocessor variable have one of two possible states: defined or not defined.
+- `assert` preprocessor macro: remember to `#include <cassert>`. if argument passed into `assert` is true then do nothing.
+- `NDEBUG` preprocessor macro: `assert` depends on whether `NDEBUG` is defined or not. If defined (e.g. `g++ -D NDEBUG main.cc`), then `assert` is disabled. Also, a couple of variables can be useful in debugging:
+```
+#ifndef NDEBUG
+		if(i3 == i4){
+			cerr << "Error: in " << __FILE__ << ": in function " << __func__
+				 << " at line " << __LINE__ << ". On " << __DATE__ << " at "
+				 << __TIME__ << endl;
+		}
+	#endif
+// output: "Error: in array_test.cpp: in function main at line 123. On Mar 13 2016 at 14:28:16"
+```
+
+### Function Pointer
+- If there is a function `bool lengthCompare(const string &, const string &);` then we may declare a pointer (in place of the function name): `bool (*pf)(const string &, const string &);  // uninitialized`.
+- By `typedef`, it can be easier: `typedef bool (*func)(const string &, const string &);` or `typedef decltype(lengthCompare) *func;` so that `func` has pointer to function type. (We should know that function `lengthCompare` has type `bool(const string &, const string &)`)
+- **Usage** When using the name of a function as a value, the function is automatically converted to a pointer. e.g. we can initialize either `pf = lengthCompare;` or `pf = &lengthCompare;`. When using, either `bool b1 = pf("hello", "goodbye")` or `bool b1 = (*pf)("hello", "goodbye")` is okay.
+- **Example** [Person.h](https://github.com/coldmanck/Cpp-Primer/blob/master/Person.h) Be aware of **`const` class objects can only explicitly call `const` member functions**, so `getHeight()` and `getWeight()` member functions in Person class should be declared `const`. For `const` member functions defined outside of the class declaration, the `const` keyword must be used on both the function prototype in the class declaration and on the function definition. **Note that constructors should not be marked as const.** [2]
+```
+#include "Person.h"
+
+void printBigger(const Person &p1, const Person &p2, bool (*pf)(const Person &, const Person &)){
+	if(pf(p1, p2))
+		cout << p1 << " is bigger!" << endl;
+	else
+		cout << p2 << " is bigger!" << endl;
+}
+
+bool compareHeight(const Person &p1, const Person &p2){
+	return p1.getHeight() > p2.getHeight() ? true : false;
+}
+
+bool compareWeight(const Person &p1, const Person &p2){
+	return p1.getWeight() > p2.getWeight() ? true : false;
+}
+
+int main(){
+  Person p1(174,65), p2(177, 59);
+	printBigger(p1, p2, compareHeight);
+	printBigger(p1, p2, compareWeight);
+}
+```
+
+
+
+
+
 # Reference
-1. http://www.cnblogs.com/kaituorensheng/p/3239446.html
-2. 
+1. [【c++】size_t 和 size_type的區別](http://www.cnblogs.com/kaituorensheng/p/3239446.html)
+2. [8.10 — Const class objects and member functions](http://www.learncpp.com/cpp-tutorial/810-const-class-objects-and-member-functions/)
