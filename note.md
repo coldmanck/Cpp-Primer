@@ -29,6 +29,20 @@ int main(){
 }
 ```
 - list initializing the return value>: `vector<string> str_list(){ return {"abc", "def", "ghi"}; }`
+- Return from `main`: the value returned from main is treated as a **status indicator**. `0` means success while most of others mean failure.
+- Returning a pointer to an array: (1) Use type alias `typedef int arrT[10];` or `using arrT = int[10];`, then `arrT *func(int i);` returns a pointer to an array. (2) Without type alias: `int (*func(int i))[10]`. (3) Under C++11, `auto func(int i) -> int(*)[10]`. Return type follows the `->` sign and use auto to temporarily replace.
+
+### Function overloading
+- `Record lookup(Account &);` and `Record lookup(const Account &);` and `Record lookup(Account*)` and `Record lookup(const Account*);` can exist at the same time. (**low-level const**)
+- while **top-level const** cannot exist simultaneously. e.g. `Record lookup(const Account)` and `Record lookup(Account)`, or `Record lookup(Phone*)` and `Record lookup(Phone* const)`.
+- `const_cast` is useful in the context of overloaded fuinctions.
+```
+const string &shorterString(const string &s1, const string &s2){  return s1 < s2 ? s1 : s2;  }
+string &shorterString(string &s1, string s2){ 
+  auto &r = shorterString(const_cast<const string&>(s1), const_cast<const string&>(s2)); 
+  return const_cast<string &>(r);
+}
+```
 
 
 ### size_t v.s. size_type [1]
@@ -55,4 +69,5 @@ int main(){
 - When using range for, use `for(const auto &i : ls)` rather than `for(auto i : ls)` because you are not going to (also cannot) modify something in the initializer_list. By this, one can avoid waste cpu to copy the value.
 
 # Reference
-- [1] http://www.cnblogs.com/kaituorensheng/p/3239446.html
+1. http://www.cnblogs.com/kaituorensheng/p/3239446.html
+2. 
