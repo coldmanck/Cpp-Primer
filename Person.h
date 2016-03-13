@@ -23,7 +23,7 @@ public:
 
 int Person::amount = 0;
 std::ostream &operator<<(std::ostream &os, const Person &p) { 
-    return os << "Person " << p.getNum() << ": height " << p.getHeight() << ", weight " << p.getWeight();
+    return os << "Person " << p.num << ": height " << p.height << ", weight " << p.weight;
 }
 
 
