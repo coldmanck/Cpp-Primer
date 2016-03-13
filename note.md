@@ -77,7 +77,7 @@ string &shorterString(string &s1, string s2){
 - When printing, one can use either **range for** or **iterator**. 
 - When using range for, use `for(const auto &i : ls)` rather than `for(auto i : ls)` because you are not going to (also cannot) modify something in the initializer_list. By this, one can avoid waste cpu to copy the value.
 
-## Declaration and Definition
+### Declaration and Definition
 - Header files should contain declarations, source files should contain definitions.
 - However, `inline` and `constexpr` functions are usually defined in header files because may being defined multiple times in the program. 
 
@@ -126,10 +126,37 @@ int main(){
 }
 ```
 
+## Chapter 7: Classes
+- `Abstract Data Type`: a class that uses data abstraction abd encapsulation.
+- Functions defined in the class are implicitly `inline`.
+- when calling `object.func()` it likes `ClassName::func(&object)`.
+- `this` is a **`const` pointer** point to the address of calling object. Type: `ClassName *const`. 
+- As a result, we cannot (by default) bind `this` to a `const` object.
+- By declare `const` after the parameter list, we indicate that `this` is a `const` pointer to `const` to solve the problem.
+- `std::string Sales_data::isbn const()` equals `std::string Sales_data::isbn(const Sales_data *const this)` is a **const member function**.
+- 簡單來說就是在 member function 上加 `const` 可以讓 `const` object 也能使用（也只能使用）此 const member function.
+- Functions that are conceptually part of a class, but not defined inside the class, are typically declared (but not defined) in the same header as the class itself.
+- If no constructor is defined, the compile-generated **synthesized default constructor** is used to initialize.
+- Classes that have members of built-in or compund type (array or pointer) usually should rely on the synthesized default constructor **only** if all such members have in-class initializers. Also, if there's another class type in the class, it cannot be initialized.
+- 4 types of constructor 
+```
+  Sales_data() = default;
+  Sales_data(const std::string &b): bookNo(b) {}
+  Sales_data(const std::string &b, unsigned u, double p): bookNo(b), units_sold(u), revenue(p*u) {}
+  Sales_data(std::istream &);	// defined outside class
+  
+  // outside class
+  Sales_data::Sales_data(std::istream &is){ is >> *this; }
+  
+  // in main.cc
+  Sales_data s1, s2("yoyo"), s3("haha", 123, 456), s4(cin);
+```
+- **Declaration and definition, of the member function which use another class type, should be placed in different files**; declared in header file and defined in source file. [3]
+- Related to copy, assignment and destruction, compiler will synthesize them automatically. However, it may encounter some problems when class using **dynamic array**.
 
 
 
-
-# Reference
+## Reference
 1. [【c++】size_t 和 size_type的區別](http://www.cnblogs.com/kaituorensheng/p/3239446.html)
 2. [8.10 — Const class objects and member functions](http://www.learncpp.com/cpp-tutorial/810-const-class-objects-and-member-functions/)
+3. [Why are constructors defined outside of C++ classes?](http://www.cplusplus.com/forum/beginner/61056/#msg330613)
