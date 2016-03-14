@@ -158,11 +158,40 @@ int main(){
 - `inline` and `constexpr` function should be defined in the header.
 - A `mutable` data member is never `const`, even when it is a member of a const object. Accordingly, a `const` member function may change a `mutable` member.
 - **In-class initializer must use either the `=` form of initialization or the direct form of initialization using curly braces `{}`.**
+- A `const` member function that returns `*this` as a reference should have a return type that is a reference to `const`. Which means, `const Screen &display(std::ostream &os) const`.
+- Member function definitions are processed **after** the compiler processes all of the declarations in the class. -> So we can make use of any other entity declared inside the class. (two-step process)
+- However, the two-step process aplies only to names used in the body of a member function. Names used in declarations, including names used for the **return type** and **types in the parameter list**, must be seen before being used.
+- Type name aliases usually should appear at the beginning of a class. (p.285)
+- Even though the class member is hidden (by re-definition in the member function), it's still possible to use either `this->member` or `ClassName::member` to access that `member`.
+- In addition, use `::member` to access the global `member`.
+- **initialize** v.s. **assign** in constructor: **Members that are `const`, references, or of a class type that doesn't have a default constructor, must be initialized** but not assigned. (p.288-289) Therefore, by using constructor initializers we can avoid faceing compile-time errors and have better efficiency. (**initialized**, rather than **(default) initialized and assigned**)
+- When using constructor initializer list, members are initialized in the order in which they appear in the class definition, but not order of initializer list.
+- Delegating constructors: use another constructor from its own class to perform its initialization.
+- **Implicit conversion**: A constructor that cab be called with a single argument defines an implicit conversion from the constructor's parameter type to the class type. Only 1 class-type conversion is allowed: 
+```
+String bookName = "The_Book";	Sales_data s1; 
+s1 += bookName;	s1 += cin;		// correct
+s1 += "The_Book";				// wrong: from const char* -> string -> Sales_data
+s1 += string("The_Book");		// okay: from string -> Sales_data
+s1 += Sales_data("The_book");	// okay: from const char* -> string
+```
+- Insert `explicit` at the beginning of the declaration of member function (inside class, no repeated ouside the class body) having just 1 argument to prevent **implicit conversion** of constructors. e.g. `explicit Sales_data(const std::string &b): bookNo(b) { ++count; }`
+- When a constructor is declared `explicit`, it can be used only with the **direct form** of initialization (so `Sales_data item = bookName;` is illegal.)
+- However, we still can explicitly convert the type to use `explicit` constructor: `s1 += static_cast<Sales_data>(bookName);`
 
 ### Friend function / class
 - A class can allow another **class or function** to access iots nonpublic members by making that class or function a `friend`.
-- A friend declaration only specifies access. It's not a general declaration of the function. Therefore we must also declare the function (outside the class) in the same header as the class itself. (While some compilers not enforce this rule)
-- A `const` member function that returns `*this` as a reference should have a return type that is a reference to `const`. Which means, `const Screen &display(std::ostream &os) const`.
+- A friend declaration only specifies access. It's not a general declaration of the function. Therefore we must also **declare** the function (outside the class) in the same header as the class itself. (While some compilers not enforce this rule)
+- A class can also make another class `friend class Window_mgr;` its friend, or declare specific member functions of another (previously defined) class as friends `friend void Window_mgr::clear(ScreenIndex);`, so that the latter's member can access the private/protect member of the former.
+- A friend function can be deined inside class, which implictly become `inline`.
+- Making a **member function (of another class)** a friend requires careful structuring of our programs. First, **declare** the class which have member function having access to another class. Then, **declare** this member function being `class` in *another class*. Finally, we can **define** this member function. (C++ Primer P.281)
+- However, to make other **classes** and **non-member functions** friend, they don't need to have been declared before. (C++ Primer P.281)
+- Even if a `friend` non-member function defined in the class, it should also be declared outside the class to be visible.
+- `Sales_data obj();` declares a function; `Sales_data obj;` define a default initialized `Sales_data` object.
+- Aggregate class (no use): a class is an aggregate if (1) all of its data members are `public` (2) has no constructor (3) has no in-class initializers (4) has no base classes or `virtual` functions. We can define this type of class by list intialization: `Data d1 = {0, "David", 1234};` by the order of data member declared inside the class. (no use)
+- 
+
+
 
 
 
@@ -170,3 +199,4 @@ int main(){
 1. [【c++】size_t 和 size_type的區別](http://www.cnblogs.com/kaituorensheng/p/3239446.html)
 2. [8.10 — Const class objects and member functions](http://www.learncpp.com/cpp-tutorial/810-const-class-objects-and-member-functions/)
 3. [Why are constructors defined outside of C++ classes?](http://www.cplusplus.com/forum/beginner/61056/#msg330613)
+4. [C++中的extern用法](http://blog.xuite.net/mmkider/world/5015593-C%2B%2B%E4%B8%AD%E7%9A%84extern%E7%94%A8%E6%B3%95)
