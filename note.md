@@ -153,6 +153,16 @@ int main(){
 ```
 - **Declaration and definition, of the member function which use another class type, should be placed in different files**; declared in header file and defined in source file. [3]
 - Related to copy, assignment and destruction, compiler will synthesize them automatically. However, it may encounter some problems when class using **dynamic array**.
+- The only difference between using `class` and `struct` is **default access control**.
+- Type members: `typedef std::string::size_type pos` or `using pos = std::string::size_type`, must appear before they are used. As a result, they usually appear at the beginning of the class.
+- `inline` and `constexpr` function should be defined in the header.
+- A `mutable` data member is never `const`, even when it is a member of a const object. Accordingly, a `const` member function may change a `mutable` member.
+- **In-class initializer must use either the `=` form of initialization or the direct form of initialization using curly braces `{}`.**
+
+### Friend function / class
+- A class can allow another **class or function** to access iots nonpublic members by making that class or function a `friend`.
+- A friend declaration only specifies access. It's not a general declaration of the function. Therefore we must also declare the function (outside the class) in the same header as the class itself. (While some compilers not enforce this rule)
+- A `const` member function that returns `*this` as a reference should have a return type that is a reference to `const`. Which means, `const Screen &display(std::ostream &os) const`.
 
 
 
