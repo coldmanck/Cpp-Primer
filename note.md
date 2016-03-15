@@ -167,6 +167,7 @@ int main(){
 - **initialize** v.s. **assign** in constructor: **Members that are `const`, references, or of a class type that doesn't have a default constructor, must be initialized** but not assigned. (p.288-289) Therefore, by using constructor initializers we can avoid faceing compile-time errors and have better efficiency. (**initialized**, rather than **(default) initialized and assigned**)
 - When using constructor initializer list, members are initialized in the order in which they appear in the class definition, but not order of initializer list.
 - Delegating constructors: use another constructor from its own class to perform its initialization.
+- An initializer for a delegating constructor must appear alone. e.g. `Sales_data(const std::string &b, unsigned u, double p): Sales_data(b), units_sold(u), revenue(p*u) { ++count; }` is wrong.
 - **Implicit conversion**: A constructor that cab be called with a single argument defines an implicit conversion from the constructor's parameter type to the class type. Only 1 class-type conversion is allowed: 
 ```
 String bookName = "The_Book";	Sales_data s1; 
@@ -178,6 +179,13 @@ s1 += Sales_data("The_book");	// okay: from const char* -> string
 - Insert `explicit` at the beginning of the declaration of member function (inside class, no repeated ouside the class body) having just 1 argument to prevent **implicit conversion** of constructors. e.g. `explicit Sales_data(const std::string &b): bookNo(b) { ++count; }`
 - When a constructor is declared `explicit`, it can be used only with the **direct form** of initialization (so `Sales_data item = bookName;` is illegal.)
 - However, we still can explicitly convert the type to use `explicit` constructor: `s1 += static_cast<Sales_data>(bookName);`
+- `Sales_data obj();` declares a function; `Sales_data obj;` define a default initialized `Sales_data` object.
+- Aggregate class (no use): a class is an aggregate if (1) all of its data members are `public` (2) has no constructor (3) has no in-class initializers (4) has no base classes or `virtual` functions. We can define this type of class by list intialization: `Data d1 = {0, "David", 1234};` by the order of data member declared inside the class. (no use)
+- A class is literal if it is (1) aggregate class (2) non-aggregate class but meets following restrictions: (a) the data members all must have literal type. (arithmetic types, references, pointers and certain classes) (b) the class must have at least 1 `constexpr` constructor. (c) if a data member has an in-class initializer, the initializer for a member of built-in type must be a constant expression, or if the member has class type, the initializer must use the member's own `constexpr` constructors. (d) The class must use default definition for its destructor.
+- We may not initialize the `static` member inside the class. (But `static` member function is OKAY.) Instead, we must define and initialize each static data member outside the class body (*Header.cpp* file is the best). e.g. `double Account::interestRate = initRate();` **Note that even `initRate()` is private member function it's OK.** **`static` member 跟 member function 一樣需要被在 class 外面 define.**
+- However we can still **in-class intialize** the `const static` members, and must do so for `constexpr static` members.
+- A `static` data member can have incomplete type, e.g. the same type as the class type. `class Bar { static Bar b1; }` While common data member is restricted to being declared as a pointer or a reference to an object of its class.
+- A `static` member can be used as a default argument.
 
 ### Friend function / class
 - A class can allow another **class or function** to access iots nonpublic members by making that class or function a `friend`.
@@ -187,11 +195,7 @@ s1 += Sales_data("The_book");	// okay: from const char* -> string
 - Making a **member function (of another class)** a friend requires careful structuring of our programs. First, **declare** the class which have member function having access to another class. Then, **declare** this member function being `class` in *another class*. Finally, we can **define** this member function. (C++ Primer P.281)
 - However, to make other **classes** and **non-member functions** friend, they don't need to have been declared before. (C++ Primer P.281)
 - Even if a `friend` non-member function defined in the class, it should also be declared outside the class to be visible.
-- `Sales_data obj();` declares a function; `Sales_data obj;` define a default initialized `Sales_data` object.
-- Aggregate class (no use): a class is an aggregate if (1) all of its data members are `public` (2) has no constructor (3) has no in-class initializers (4) has no base classes or `virtual` functions. We can define this type of class by list intialization: `Data d1 = {0, "David", 1234};` by the order of data member declared inside the class. (no use)
-- A class is literal if it is (1) aggregate class (2) non-aggregate class but meets following restrictions: (a) the data members all must have literal type. (arithmetic types, references, pointers and certain classes) (b) the class must have at least 1 `constexpr` constructor. (c) if a data member has an in-class initializer, the initializer for a member of built-in type must be a constant expression, or if the member has class type, the initializer must use the member's own `constexpr` constructors. (d) The class must use default definition for its destructor.
-- We may not initialize the `static` member inside the class. (But `static` member function is OKAY.) Instead, we must define and initialize each static data member outside the class body (Header.cpp file is the best). e.g. `double Account::interestRate = initRate();` **Note that even `initRate()` is private member function it's OK.** **`static` member 跟 member function 一樣需要被在 class 外面 define.**
-- However we can still **in-class intialize** the `const static` members, and must do so for `constexpr static` members.
+
 
 
 ## Reference
