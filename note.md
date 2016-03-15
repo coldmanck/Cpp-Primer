@@ -189,10 +189,9 @@ s1 += Sales_data("The_book");	// okay: from const char* -> string
 - Even if a `friend` non-member function defined in the class, it should also be declared outside the class to be visible.
 - `Sales_data obj();` declares a function; `Sales_data obj;` define a default initialized `Sales_data` object.
 - Aggregate class (no use): a class is an aggregate if (1) all of its data members are `public` (2) has no constructor (3) has no in-class initializers (4) has no base classes or `virtual` functions. We can define this type of class by list intialization: `Data d1 = {0, "David", 1234};` by the order of data member declared inside the class. (no use)
-- 
-
-
-
+- A class is literal if it is (1) aggregate class (2) non-aggregate class but meets following restrictions: (a) the data members all must have literal type. (arithmetic types, references, pointers and certain classes) (b) the class must have at least 1 `constexpr` constructor. (c) if a data member has an in-class initializer, the initializer for a member of built-in type must be a constant expression, or if the member has class type, the initializer must use the member's own `constexpr` constructors. (d) The class must use default definition for its destructor.
+- We may not initialize the `static` member inside the class. (But `static` member function is OKAY.) Instead, we must define and initialize each static data member outside the class body (Header.cpp file is the best). e.g. `double Account::interestRate = initRate();` **Note that even `initRate()` is private member function it's OK.** **`static` member 跟 member function 一樣需要被在 class 外面 define.**
+- However we can still **in-class intialize** the `const static` members, and must do so for `constexpr static` members.
 
 
 ## Reference
